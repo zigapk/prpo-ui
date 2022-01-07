@@ -14,7 +14,7 @@ import DateAdapter from "@mui/lab/AdapterDateFns";
 
 function MyApp({Component, pageProps}: AppProps) {
   return (
-      <>
+      <div className="app-root">
         <Head>
           <meta name="viewport" content="initial-scale=1, width=device-width"/>
         </Head><SnackbarProvider
@@ -36,7 +36,7 @@ function MyApp({Component, pageProps}: AppProps) {
         </AuthProvider>
         </LocalizationProvider>
       </SnackbarProvider>
-      </>
+      </div>
   );
 }
 

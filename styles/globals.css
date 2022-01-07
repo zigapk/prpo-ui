@@ -1,4 +1,4 @@
 html,
-body {
-  background-color: #CFD8DC;
+body, .app-root {
+  background-color: #CFD8DC !important;
 }
