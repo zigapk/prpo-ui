@@ -1,9 +1,5 @@
 export interface IUser {
-    id: number;
-    email: string;
-    firstName: string;
-    lastName: string;
-    type: string;
+    uid: string;
 }
 
 export interface IAuthState {
@@ -16,8 +12,6 @@ export interface IAuthContext {
     logout: () => void;
 }
 
-export const userDefaultData: IUser = { id: 0, email: '', firstName: '', lastName: '', type: '' };
-
 export enum AppAuthState {
     Loading,
     LoggedOut,
@@ -27,4 +21,21 @@ export enum AppAuthState {
 export interface ILoginCredentials {
     email: string;
     password: string;
+}
+
+export interface ICharger {
+    id: number,
+    name: string,
+    address: string,
+    lat: number,
+    lon: number,
+    date_created: Date,
+}
+
+export interface IReservation {
+    id: number,
+    charger_id: number,
+    user_id: string,
+    time_from: string,
+    time_until: string,
 }

@@ -1,32 +1,37 @@
-import { AppBar, Box, Button, Card, Container, Grid, Toolbar, Typography } from '@mui/material';
+import { AppBar, Box, Button, Card, CircularProgress, Container, Grid, Toolbar, Typography } from '@mui/material';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import { useSnackbar } from 'notistack';
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { handleApiError, privateAxios } from "../util/api";
 import { useRouter } from "next/router";
 import { AuthContext } from "../contexts/auth";
-import { route } from "next/dist/server/router";
+import Charger from "../components/Charger";
+import { ICharger } from "../interfaces";
 
 const Home: NextPage = () => {
   const {enqueueSnackbar} = useSnackbar();
   const authContext = useContext(AuthContext);
 
-  const [chargers, setChargers] = useState(null);
+  const [chargers, setChargers] = useState<ICharger[]>([]);
+  const [lastPageSize, setLastPageSize] = useState(1000);
+  const [loading, setLoading] = useState(true);
 
-  const getChargersPage = (offset: number) => {
-    privateAxios.get('char/chargers').then(() => {
-      console.log('done');
-    }).catch(reason => handleApiError(reason, enqueueSnackbar));
-  }
+  const getChargersPage = useCallback((offset: number) => {
+    setLoading(true);
+    privateAxios.get(`char/chargers?offset=${offset}`).then(response => {
+      setChargers(prevChargers => [...prevChargers, ...response.data]);
+      setLastPageSize(response.data.length);
+      setLoading(false)
+    }).catch(reason => {
+      setLoading(false);
+      handleApiError(reason, enqueueSnackbar)
+    });
+  }, [enqueueSnackbar]);
 
-  const getChargers = () => {
-    getChargersPage(0);
-  }
-
-  useEffect(getChargers, [
-    getChargers,
-  ]);
+  useEffect(() => {
+    getChargersPage(0)
+  }, [getChargersPage]);
 
   const router = useRouter();
 
@@ -50,30 +55,35 @@ const Home: NextPage = () => {
 
         <Box py={5}>
           <Container>
-            <Grid container justifyContent="center">
-              <Grid item xs={3}>
-                <Card variant="outlined">
-                  <Box p={2}>
-                    <Typography>Text</Typography>
-                    <Button
-                        variant="contained"
-                        onClick={() => enqueueSnackbar('This is a message!')}
-                    >
-                      snackbar
-                    </Button>
-                    <Button
-                        variant="contained"
-                        onClick={() =>
-                            enqueueSnackbar('This is a success message!', {
-                              variant: 'success',
-                            })
+            <Grid container spacing={3}>
+              {
+                chargers.map(charger =>
+                    <Grid item xs={12} md={6} lg={4} key={charger.id}>
+                      <Charger charger={charger}/>
+                    </Grid>)
+              }
+              <Grid item xs={12}/>
+              {
+                loading ? <Grid item>
+                  <CircularProgress/>
+                </Grid> : null
+              }
+              {
+                !loading && lastPageSize >= 3 ? <Grid item xs={12}>
+                  <Grid container direction='row' justifyContent='center'>
+                    <Grid item>
+                      <Box py={3}>
+                        <Button variant='contained' onClick={() => {
+                          getChargersPage(chargers.length);
                         }
-                    >
-                      success
-                    </Button>
-                  </Box>
-                </Card>
-              </Grid>
+                        }>
+                          Load more
+                        </Button>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Grid> : null
+              }
             </Grid>
           </Container>
         </Box>

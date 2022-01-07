@@ -1,18 +1,18 @@
 import React, { createContext, useCallback, useEffect, useState } from 'react';
 
-import { AppAuthState, IAuthContext, IAuthState, IUser, userDefaultData } from '../interfaces';
+import { AppAuthState, IAuthContext, IAuthState, IUser } from '../interfaces';
 import jwtDecode from 'jwt-decode';
 import { API, publicAxios } from '../util/api';
 import useWindowFocus from 'use-window-focus';
 import { accessTokenRefreshMargin, refreshTokenRefreshMargin, tokenRefreshInterval } from '../util/constants';
 import { useRouter } from 'next/router';
 
-const authStateDefaultData: IAuthState = {
-    user: userDefaultData,
-};
-
 const authContextDefaultData: IAuthContext = {
-    authState: authStateDefaultData,
+    authState: {
+        user: {
+            uid: ''
+        }
+    },
     setAuthState: () => null,
     logout: () => null,
 };
@@ -73,9 +73,19 @@ type Props = {
 };
 
 const AuthProvider = ({ children }: Props): JSX.Element => {
-    const [authState, setAuthState] = useState(authStateDefaultData);
+    const [authState, setAuthState] = useState({user: {uid: ''}});
     const windowFocused = useWindowFocus();
     const { pathname } = useRouter();
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setAuthState({
+                user: {
+                    uid: localStorage.getItem('user_uuid') ?? ''
+                }
+            });
+        }
+    }, [])
 
     const setAuthInfo = (value: { refreshToken?: string; token: string; userData?: IUser }) => {
         if (isTokenValid(value.token, tokenRefreshInterval)) {
@@ -89,6 +99,7 @@ const AuthProvider = ({ children }: Props): JSX.Element => {
         // Set state
         if (value.userData) {
             setAuthState({ user: value.userData });
+            localStorage.setItem('user_uuid', value.userData.uid);
         }
     };
 
@@ -107,7 +118,9 @@ const AuthProvider = ({ children }: Props): JSX.Element => {
             .then((response: any) => {
                 setAuthInfo({
                     token: response.data.access,
-                    userData: userDefaultData,
+                    userData: {
+                        uid: localStorage.getItem('user_uuid') ?? ''
+                    },
                 });
                 console.log('Token refreshed.');
             })
@@ -149,7 +162,7 @@ const AuthProvider = ({ children }: Props): JSX.Element => {
     const logout = () => {
         console.log('Logging out user');
         clearUserInfo();
-        setAuthState(authStateDefaultData);
+        setAuthState({user: {uid: ''}});
     };
 
     return (

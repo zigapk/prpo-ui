@@ -1,14 +1,12 @@
 import React, { useContext, useEffect } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import * as yup from 'yup';
 import { useRouter } from 'next/router';
 import { publicAxios } from "../../util/api";
 import { useSnackbar } from "notistack";
 import { AuthContext, isAuthenticated } from "../../contexts/auth";
-import { AppAuthState, userDefaultData } from "../../interfaces";
+import { AppAuthState } from "../../interfaces";
 import { Box, Button, Card, Grid, TextField, Typography } from "@mui/material";
-import { deepPurple, teal } from "@mui/material/colors";
-import { ThemeProvider } from "@mui/system";
 
 interface SignInFormFields {
   email: string;
@@ -56,7 +54,9 @@ const SignUp = (): JSX.Element => {
                 const state = {
                   token: response.data.access_token,
                   refreshToken: response.data.refresh_token,
-                  user: userDefaultData,
+                  userData: {
+                    uid: response.data.user_uid,
+                  },
                 };
                 authContext.setAuthState(state);
                 router.replace('/');

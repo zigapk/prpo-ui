@@ -1,7 +1,6 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 import {
   AppAuthState,
-  userDefaultData,
 } from '../interfaces';
 
 import { isAuthenticated } from './auth';
